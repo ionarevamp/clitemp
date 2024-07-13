@@ -1,0 +1,10 @@
+[package]
+name = "temp_convert_area"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.11.26", features = ["json"] }
+serde = { version = "1.0.197", features = ["serde_derive", "derive"] }
+serde_json = { version = "1.0.114", features = ["indexmap"] }
+tokio = { version = "1.36.0", features = ["full"] }
