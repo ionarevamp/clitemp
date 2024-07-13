@@ -59,13 +59,32 @@ pub fn convert(mode: &mut char, temp: f64) -> f64 {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
 
-	let key = fs::read_to_string("WeatherAPI.key").unwrap_or_else( |_|
+    let exe_path = std::env::current_exe().unwrap().display().to_string();
+    let mut key_path = { 
+        let mut char_idx = 0;
+        let mut last_slash_idx = 0;
+        for ch in exe_path.chars() {
+            match ch {
+                '/' | '\\' => {
+                    last_slash_idx = char_idx;
+                },
+                _ => {},
+            }
+            char_idx += 1;
+        }
+        &exe_path[0..=last_slash_idx]
+    }.to_string();
+
+    key_path.push_str("WeatherAPI.key");
+
+
+    let key = fs::read_to_string(std::path::Path::new(&key_path)).unwrap_or_else( |_|
 		panic!("Unable to read key from `WeatherAPI.key`. Exiting\n")
 	 );
 	
 	let mut args: Vec<String> = env::args().collect();
 	//dbg!(&args);
-
+    
 	if args.len() < 2 { args.push("f".to_string()); }
     let mut modechar = args[1].trim().to_lowercase().chars().nth(0).unwrap_or('f');
     if modechar != 'f' && modechar != 'c' {
