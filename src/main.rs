@@ -100,6 +100,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	*/
 
 	// Get weather data as json from WeatherAPI.com using key
+    // 83702 is the zip code
+    // TODO: read zip code from a file
 	let resp = rq::get(
 		format!("http://api.weatherapi.com/v1/current.json?key={}&q=83702&aqi=yes", key).as_str())
         .await?
