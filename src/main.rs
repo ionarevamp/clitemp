@@ -1,15 +1,17 @@
 extern crate reqwest as rq;
 extern crate serde_json;
 extern crate serde;
+extern crate clap;
+
+use clap::Parser;
 
 use std::fs;
 use std::env;
-use std::io::Write;
-use std::str::FromStr;
+//use std::io::Write;
+//use std::str::FromStr;
 use std::error::Error;
 
-use std::collections::HashMap;
-use crate::serde::{Deserialize};
+use crate::serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 struct FieldCondition {
@@ -48,6 +50,17 @@ struct Data {
 	current: FieldCurrent,
 }
 
+#[derive(Parser, Debug)]
+#[command(version, about)]
+struct Args {
+    /// Check weather for this zip code
+    #[arg(short, long, required(false), default_value_t=String::new())]
+    zip: String,
+    /// Check weather using this key
+    #[arg(short, long, required(false), default_value_t=String::new())]
+    key: String,
+}
+/*
 pub fn convert(mode: &mut char, temp: f64) -> f64 {
     return match *mode {
 		'f' => (temp - 32.0) * (5.0/9.0),
@@ -55,7 +68,7 @@ pub fn convert(mode: &mut char, temp: f64) -> f64 {
 		_ => f64::MAX,
     }
 }
-
+*/
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
 
@@ -67,17 +80,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let key_path = parent_path.join("WeatherAPI.key");
     let zip_path = parent_path.join("zipcode.txt");
+   
+    let clapargs = Args::parse();
     
-    let key = fs::read_to_string(std::path::Path::new(&key_path)).unwrap_or_else( |_|
-		panic!("Unable to read key from `WeatherAPI.key`. Exiting\n\r")
-	 );
-    let zip = fs::read_to_string(std::path::Path::new(&zip_path)).unwrap_or_else( |_|
-        panic!("Unable to read zip code from `zipcode.txt` Exiting\n\r")
-    );
-	
-	//let mut args: Vec<String> = env::args().collect();
-	//dbg!(&args);
-    
+    let key = match clapargs.key.chars().count() > 0 {
+        true => clapargs.key,
+        false => fs::read_to_string(std::path::Path::new(&key_path)).unwrap_or_else( |_|
+	    	panic!("Unable to read key from `WeatherAPI.key`. Exiting\n\r"),
+	    )
+    };
+    let zip = match clapargs.zip.chars().count() > 0 {
+        true => clapargs.zip,
+        false => fs::read_to_string(std::path::Path::new(&zip_path)).unwrap_or_else( |_|
+            panic!("Unable to read zip code from `zipcode.txt` Exiting\n\r")
+        )
+    };
+	 
 	// Get weather data as json from WeatherAPI.com using key and zip code
 	let resp = rq::get(
 		format!("http://api.weatherapi.com/v1/current.json?key={}&q={}&aqi=yes", key, zip).as_str())

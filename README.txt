@@ -4,6 +4,8 @@ Specifically you need:
 - a file containing said key named 'WeatherAPI.key' in same directory as the built binary when running it directly,
 - and a file named 'zipcode.txt' containing your zip code in the same directory
 
+Additionally, the key and zip code can be overwritten with the -k and -z options, respectively
+
 The easiest way to install it is to:
 run `git clone https://www.github.com/ionarevamp/clitemp && cd clitemp` (Requires git)
 run `cargo install --path .` (Requires a rust install) , and
