@@ -84,7 +84,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await?
         .json::<Data>()
         .await?;
-
+    
 	let weather: &FieldCurrent = &resp.current;
 	let air_quality: &FieldAirQuality = &weather.air_quality;
 	let sky: &String = &weather.condition.text;
@@ -100,10 +100,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 	
 	println!("Temperature in Celsius: {:.1} (Feels like {:.1})", weather.temp_c, weather.feelslike_c);
 	println!("Temperature in Fahrenheit: {:.1} (Feels like {:.1})", weather.temp_f, weather.feelslike_f);
-	println!("UV strength: {:.1}", weather.uv);
+	println!("UV strength: {}", weather.uv);
 	println!("Wind Speed: {}mph, {}kph", weather.wind_mph, weather.wind_kph );
 	println!("Air Quality: \n\tCO: {:.1}\n\tNO2: {:.1}\n\tO3: {:.1}\n\tSM2: {:.1}\n\tPM2.5: {:.1}\n\tPM10: {:.1}\n\t\
-			 US EPA Index: {:.1}\n\tUK DEFRA index: {:.1}",
+			 US EPA Index: {}\n\tUK DEFRA index: {}",
 			air_quality.co, air_quality.no2, air_quality.o3, air_quality.so2, air_quality.pm2_5,
 			air_quality.pm10, air_quality.us_epa_index, air_quality.gb_defra_index );
 
