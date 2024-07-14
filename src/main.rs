@@ -59,51 +59,28 @@ pub fn convert(mode: &mut char, temp: f64) -> f64 {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
 
-    let exe_path = std::env::current_exe().unwrap().display().to_string();
-    let mut key_path = { 
-        let mut char_idx = 0;
-        let mut last_slash_idx = 0;
-        for ch in exe_path.chars() {
-            match ch {
-                '/' | '\\' => {
-                    last_slash_idx = char_idx;
-                },
-                _ => {},
-            }
-            char_idx += 1;
-        }
-        &exe_path[0..=last_slash_idx]
-    }.to_string();
+    let exe_path = std::env::current_exe()
+        .expect("Could not get path of running executable.");
+    let parent_path = exe_path
+        .parent()
+        .unwrap();
 
-    key_path.push_str("WeatherAPI.key");
-
-
+    let key_path = parent_path.join("WeatherAPI.key");
+    let zip_path = parent_path.join("zipcode.txt");
+    
     let key = fs::read_to_string(std::path::Path::new(&key_path)).unwrap_or_else( |_|
-		panic!("Unable to read key from `WeatherAPI.key`. Exiting\n")
+		panic!("Unable to read key from `WeatherAPI.key`. Exiting\n\r")
 	 );
+    let zip = fs::read_to_string(std::path::Path::new(&zip_path)).unwrap_or_else( |_|
+        panic!("Unable to read zip code from `zipcode.txt` Exiting\n\r")
+    );
 	
-	let mut args: Vec<String> = env::args().collect();
+	//let mut args: Vec<String> = env::args().collect();
 	//dbg!(&args);
     
-	if args.len() < 2 { args.push("f".to_string()); }
-    let mut modechar = args[1].trim().to_lowercase().chars().nth(0).unwrap_or('f');
-    if modechar != 'f' && modechar != 'c' {
-		println!("Invalid option. Assuming Fahrenheit.");
-		modechar = 'f';
-    }  
-    	// ^ takes first character of input string or defaults to 'f' if invalid
-    /*
-    let mut temp: f64 = match f64::from_str(args[2].as_str().trim()) {
-		Ok(num) => num,
-		Err(_) => f64::MAX,
-    };
-	*/
-
-	// Get weather data as json from WeatherAPI.com using key
-    // 83702 is the zip code
-    // TODO: read zip code from a file
+	// Get weather data as json from WeatherAPI.com using key and zip code
 	let resp = rq::get(
-		format!("http://api.weatherapi.com/v1/current.json?key={}&q=83702&aqi=yes", key).as_str())
+		format!("http://api.weatherapi.com/v1/current.json?key={}&q={}&aqi=yes", key, zip).as_str())
         .await?
         .json::<Data>()
         .await?;
@@ -117,7 +94,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 		0 => print!(""),
 		(1..=50) => print!(" with some clouds"),
 		(51..=100) => print!(" with significant clouds"),
-		_ => print!(" with cloud value {}", weather.cloud as usize),
+		_ => print!(" with cloud value {}", weather.cloud),
 	}
 	println!(".");
 	
@@ -131,8 +108,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 			air_quality.pm10, air_quality.us_epa_index, air_quality.gb_defra_index );
 
     Ok(())
-    //println!("Temperature in {} is {:.1}°",temp_type,convert(&mut modechar, &mut temp));
-    
 }
 
 
