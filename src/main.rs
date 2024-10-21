@@ -6,7 +6,6 @@ extern crate clap;
 use clap::Parser;
 
 use std::fs;
-use std::env;
 //use std::io::Write;
 //use std::str::FromStr;
 use std::error::Error;
@@ -54,11 +53,11 @@ struct Data {
 #[command(version, about)]
 struct Args {
     /// Check weather for this zip code
-    #[arg(short, long, required(false), default_value_t=String::new())]
-    zip: String,
+    #[arg(short, long, required(false))]
+    zip: Option<String>,
     /// Check weather using this key
-    #[arg(short, long, required(false), default_value_t=String::new())]
-    key: String,
+    #[arg(short, long, required(false))]
+    key: Option<String>,
 }
 /*
 pub fn convert(mode: &mut char, temp: f64) -> f64 {
@@ -83,15 +82,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
    
     let clapargs = Args::parse();
     
-    let key = match clapargs.key.chars().count() > 0 {
-        true => clapargs.key,
-        false => fs::read_to_string(std::path::Path::new(&key_path)).unwrap_or_else( |_|
-	    	panic!("Unable to read key from `WeatherAPI.key`. Exiting\n\r"),
+    let key = if let Some(val) = clapargs.key { val } else {
+        fs::read_to_string(std::path::Path::new(&key_path)).unwrap_or_else( |_|
+	    	panic!("Unable to read key from `WeatherAPI.key`. Exiting\n\r")
 	    )
     };
-    let zip = match clapargs.zip.chars().count() > 0 {
-        true => clapargs.zip,
-        false => fs::read_to_string(std::path::Path::new(&zip_path)).unwrap_or_else( |_|
+    let zip = if let Some(val) = clapargs.zip { val } else {
+        fs::read_to_string(std::path::Path::new(&zip_path)).unwrap_or_else( |_|
             panic!("Unable to read zip code from `zipcode.txt` Exiting\n\r")
         )
     };
